@@ -1,22 +1,33 @@
 import {
   ToastAndroid
 } from 'react-native';
-var message={
-  warning:function(data){
-    ToastAndroid.show(data,1);
+var message = {
+  warning: function (data) {
+    ToastAndroid.show(data, 1);
   },
-  success:function(data){
-    ToastAndroid.show(data,1);
+  success: function (data) {
+    ToastAndroid.show(data, 1);
   }
 }
-import { GET_XSS_project, Create_XSS_project, DELETE_XSS_project, Create_XSS_module, Get_XSS_module, Update_XSS_module, DELETE_XSS_module, Get_one_project_xss, Update_XSS_project ,Get_XSS_public_module} from '../services/services'
+import { GET_XSS_project, Create_XSS_project, DELETE_XSS_project, Create_XSS_module, Get_XSS_module, Update_XSS_module, DELETE_XSS_module, Get_one_project_xss, Update_XSS_project, Get_XSS_public_module } from '../services/services'
+
+function log(target, name, descriptor) {  
+  var oldValue = descriptor.value;
+  descriptor.value = function() {
+    console.log(`"Call ${name}" arguments`, arguments);
+    return oldValue.apply(null, arguments);
+  };
+  return descriptor;
+}
+
 export default {
   namespace: 'xss',
 
   state: {
+    loading:false,
     XSS_projects: [],
     XSS_modules: [],
-    XSS_public_modules:[],
+    XSS_public_modules: [],
     Update_XSS_project_id: null,
     one_project_xss: {
       columns: [],
@@ -27,22 +38,28 @@ export default {
     Create_XSS_module_Model: false,
     Update_XSS_module_Model: false,
     Update_XSS_project_Model: false,
-    Check_XSS_module_Model:false,
-    Check_one_XSS_result_Model:false,
-    Check_one_XSS_result_obj:{},
+    Check_XSS_module_Model: false,
+    Check_one_XSS_result_Model: false,
+    Check_one_XSS_result_obj: {},
     Update_XSS_module_id: null,
-    Check_XSS_module_id:null
+    Check_XSS_module_id: null
   },
   effects: {
+   
     *GET_XSS_project({ payload }, { call, put }) {
       const { data } = yield call(GET_XSS_project, payload);
-      if (data && data.status == 1) {
+      
+      if(!data){return;}
+         if(data.status==1){
         yield put({
           type: "update",
           payload: {
-            XSS_projects: data.data
+            XSS_projects: data.data,
+            loading:false
           }
         });
+
+
       } else {
         message.warning(data.messages);
       }
@@ -137,7 +154,7 @@ export default {
         yield put({
           type: "update",
           payload: {
-            Update_XSS_module_Model: false,Update_XSS_module_id:null
+            Update_XSS_module_Model: false, Update_XSS_module_id: null
           }
         })
         yield put({
@@ -150,25 +167,35 @@ export default {
       }
     },
     *Get_one_project_xss({ payload }, { call, put }) {
-      const { data } = yield call(Get_one_project_xss, payload);
-      if (!data) { return; }
-      if (data.status == 1) {
-                data.data.items=data.data.items.map((x)=>{
-            x.IP_address=((ip)=>{
-              if (ip.substr(0, 7) === "::ffff:") {
-                    ip = ip.substr(7)
-                }
-                if(ip === "::1"){
-                    ip='127.0.0.1'
-                }
-                return ip;
-            })(x.IP_address)
-              return x
-            })
         yield put({
           type: "update",
           payload: {
-            one_project_xss: data.data
+             loading:true
+          }
+        });
+
+      const { data } = yield call(Get_one_project_xss, payload);
+      if (!data) { return; }
+      if (data.status == 1) {
+
+        data.data.items = data.data.items.map((x) => {
+          x.IP_address = ((ip) => {
+            if (ip.substr(0, 7) === "::ffff:") {
+              ip = ip.substr(7)
+            }
+            if (ip === "::1") {
+              ip = '127.0.0.1'
+            }
+            return ip;
+          })(x.IP_address)
+          return x
+        })
+
+        yield put({
+          type: "update",
+          payload: {
+            one_project_xss: data.data,
+             loading:false
           }
         });
       }
@@ -203,8 +230,9 @@ export default {
             XSS_public_modules: data.data
           }
         })
-      } 
+      }
     },
+
   },
 
   reducers: {

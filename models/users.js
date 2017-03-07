@@ -35,6 +35,7 @@ export default {
                }
            });
             payload.navigator.push({name:'page2'})
+
             ToastAndroid.show(data.messages,1);
          }else{
             ToastAndroid.show(data.messages,2);

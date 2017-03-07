@@ -49,6 +49,6 @@ export default class App extends Component {
 
 app.router(() => <App />);
 
-AppRegistry.registerComponent('AwesomeProject', () => app.start());
+AppRegistry.registerComponent('myapp', () => app.start());
 
 

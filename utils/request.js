@@ -9,13 +9,14 @@ function parseJSON(response) {
 }
 
 function checkStatus(response) {
+  
   if (response.status >= 200 && response.status < 300) {
     return response;
   }else{
  //   message.error(response.status+'-'+response.statusText);
       ToastAndroid.show(response.status+'-'+response.statusText,1);
   }
-
+  //console.warn(JSON.stringify(response)); 
   const error = new Error(response.statusText);
   error.response = response;
   throw error;
