@@ -95,6 +95,10 @@ android {
         ndk {
             abiFilters "armeabi-v7a", "x86"
         }
+        manifestPlaceholders = [
+            JPUSH_APPKEY: "79310e10b9841488db93d340", //在此替换你的APPKey
+            APP_CHANNEL: "developer-default"
+        ]
     }
     signingConfigs {
         release {
@@ -136,6 +140,8 @@ android {
 }
 
 dependencies {
+    compile project(':jpush-react-native')
+    compile project(':jcore-react-native')
     compile fileTree(dir: "libs", include: ["*.jar"])
     compile "com.android.support:appcompat-v7:23.0.1"
     compile "com.facebook.react:react-native:+"  // From node_modules

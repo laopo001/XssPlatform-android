@@ -18,7 +18,7 @@ import { Popup, List, InputItem, Switch } from 'antd-mobile';
 const Item = List.Item;
 import { createForm } from 'rc-form';
 import { Container, Content, InputGroup, Input, Icon, Button, Header, Left, Right, Body, Title, Text } from 'native-base';
-
+import JPushModule from 'jpush-react-native';
 
 class App extends Component {
     constructor(props) {
@@ -30,18 +30,31 @@ class App extends Component {
         };
     }
     componentDidMount() {
+        JPushModule.addReceiveCustomMsgListener((message) => {
+          //   console.warn("addReceiveCustomMsgListener" +JSON.stringify(message));
+          //  this.setState({ pushMsg: message });
+        });
+        JPushModule.addReceiveNotificationListener((message) => {
+          //  console.warn("receive notification: " + JSON.stringify(message));
+        })
+         JPushModule.addReceiveOpenNotificationListener((map) => {
+           //  console.warn("addReceiveOpenNotificationListener: " + JSON.stringify(map));
+                this.props.navigator.push({
+                    name: 'page2'
+                })
+          })
         this.props.dispatch({
             type: 'users/checkLogin'
         });
         AsyncStorage.getItem('RememberPW').then((result) => {
             if (result == '1') {
                 AsyncStorage.getItem('FormValue').then((result) => {
-                 //   console.warn(result);
-                    var FormValue=JSON.parse(result);
-                    this.props.form.setFields({userName:{value:FormValue.userName},password:{value:FormValue.password}})
+                    //   console.warn(result);
+                    var FormValue = JSON.parse(result);
+                    this.props.form.setFields({ userName: { value: FormValue.userName }, password: { value: FormValue.password } })
                 })
-            }else{
-                this.setState({remember:false})
+            } else {
+                this.setState({ remember: false })
             }
         })
         BackAndroid.addEventListener('hardwareBackPress', () => {
@@ -67,12 +80,12 @@ class App extends Component {
         this.props.form.validateFields({ force: true }, (error) => {
             if (!error) {
                 var form = this.props.form.getFieldsValue()
-               //  console.log(form)
+                //  console.log(form)
                 if (this.state.remember) {
                     AsyncStorage.setItem('RememberPW', '1').then(() => {
                         AsyncStorage.setItem('FormValue', JSON.stringify(form))
                     })
-                }else{ AsyncStorage.setItem('RememberPW', '0')}
+                } else { AsyncStorage.setItem('RememberPW', '0') }
                 this.props.dispatch({
                     type: 'users/login',
                     payload: { userObj: form, navigator: this.props.navigator }
@@ -82,7 +95,7 @@ class App extends Component {
         });
     }
     validateAccount = (rule, value, callback) => {
-     
+
         if (value && value.length >= 4) {
             callback();
         } else {
